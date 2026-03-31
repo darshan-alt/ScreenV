@@ -17,46 +17,79 @@ chrome.runtime.onMessage.addListener(async (message) => {
   }
 });
 
+let canvasInterval;
+let recordingTimeout;
+
 async function startRecording(options) {
   try {
-    // Get screen stream
     const screenStream = await navigator.mediaDevices.getDisplayMedia({
-      video: {
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-        frameRate: { ideal: 30 }
-      },
+      video: { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30 } },
       audio: true
     });
 
-    // Get webcam if needed
+    let finalStream = screenStream;
+
     if (options.webcam) {
-      const webcamStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: false
-      });
-      // Composite screen and webcam here (TBD: advanced compositing logic)
-      // For now, let's just record the screen
+      const webcamStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      const canvas = document.createElement('canvas');
+      canvas.width = 1920;
+      canvas.height = 1080;
+      const ctx = canvas.getContext('2d');
+
+      const screenVideo = document.createElement('video');
+      screenVideo.srcObject = screenStream;
+      screenVideo.play();
+
+      const webcamVideo = document.createElement('video');
+      webcamVideo.srcObject = webcamStream;
+      webcamVideo.play();
+
+      canvasInterval = setInterval(() => {
+        ctx.drawImage(screenVideo, 0, 0, 1920, 1080);
+        const pipWidth = 320, pipHeight = 240, margin = 20;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(1920 - margin - pipWidth/2, 1080 - margin - pipHeight/2, pipHeight/2, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(webcamVideo, 1920 - margin - pipWidth, 1080 - margin - pipHeight, pipWidth, pipHeight);
+        ctx.restore();
+      }, 1000 / 30);
+
+      const canvasStream = canvas.captureStream(30);
+      screenStream.getAudioTracks().forEach(t => canvasStream.addTrack(t));
+      
+      // Store original streams to stop their tracks later
+      canvasStream.originalStreams = [screenStream, webcamStream];
+      finalStream = canvasStream;
     }
 
-    stream = screenStream;
-    mediaRecorder = new MediaRecorder(stream, {
-      mimeType: 'video/webm; codecs=vp9'
-    });
+    stream = finalStream;
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
 
     mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordedChunks.push(event.data);
-      }
+      if (event.data.size > 0) recordedChunks.push(event.data);
     };
 
     mediaRecorder.onstop = () => {
       saveRecording();
-      // Clean up
-      stream.getTracks().forEach(track => track.stop());
+      if (canvasInterval) clearInterval(canvasInterval);
+      if (recordingTimeout) clearTimeout(recordingTimeout);
+      
+      // Stop all tracks
+      if (stream.originalStreams) {
+        stream.originalStreams.forEach(s => s.getTracks().forEach(t => t.stop()));
+      } else {
+        stream.getTracks().forEach(t => t.stop());
+      }
     };
 
     mediaRecorder.start();
+
+    // 6-minute (360s) auto-stop
+    recordingTimeout = setTimeout(() => {
+      stopRecording();
+    }, 360 * 1000);
+
   } catch (error) {
     console.error('Error starting recording:', error);
     chrome.runtime.sendMessage({ type: 'RECORDING_ERROR', error: error.message });
@@ -98,7 +131,7 @@ async function saveRecording() {
       chrome.runtime.sendMessage({ type: 'UPLOAD_SUCCESS', video: data.video });
       
       // Open dashboard after success
-      // chrome.tabs.create({ url: 'http://localhost:3000/dashboard' });
+      chrome.tabs.create({ url: 'http://localhost:3000/dashboard' });
     } else {
       const error = await response.json();
       throw new Error(error.error || 'Upload failed');

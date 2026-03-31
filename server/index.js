@@ -6,8 +6,27 @@ const { initDB } = require('./db');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Enforcement: Check for JWT_SECRET in production
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  console.error('CRITICAL: JWT_SECRET must be set in production environment!');
+  process.exit(1);
+}
+
 // Middleware
-app.use(cors());
+const allowedOrigins = ['http://localhost:3000']; 
+// In development, we can dynamically allow chrome-extension:// origins
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('chrome-extension://')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 // Serve static uploads for easy thumbnail/poster access
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

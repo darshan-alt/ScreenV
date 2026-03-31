@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Check login status (TBD: connect to production API)
   const token = (await chrome.storage.local.get(['token'])).token;
   if (!token) {
-    // loginForm.classList.remove('hidden');
-    // controls.classList.add('hidden');
+    loginForm.classList.remove('hidden');
+    controls.classList.add('hidden');
   }
 
   // Initial status
