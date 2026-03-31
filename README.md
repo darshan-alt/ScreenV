@@ -8,64 +8,72 @@
 
 ### 📼 Recording (Chrome Extension)
 - **High-Quality Capture**: Record your screen, active tab, or entire window at up to 60fps.
-- **Picture-in-Picture (PiP)**: Circular webcam overlay integrated directly into your recording.
-- **Automatic Upload**: Recordings are instantly uploaded to your personal dashboard upon completion.
-- **Auto-Stop**: Built-in 6-minute maximum recording limit for optimized processing.
+- **Circular WebCam PiP**: Real-time Picture-in-Picture compositing directly in the browser document.
+- **Automatic Upload**: Recordings are instantly uploaded to your personal dashboard via the REST API.
+- **Smart Auto-Stop**: Integrated 6-minute (360s) recording limit to ensure browser performance.
 
-### ✂️ Editing (Web App)
-- **Client-Side Processing**: Fast video trimming and exports powered by `FFmpeg.wasm` running in a dedicated Web Worker (no server-side rendering lag!).
-- **Annotation Tools**: Add blur regions to hide sensitive information or highlights to draw attention.
-- **Timeline Editor**: Frame-accurate trimming with interactive handles and real-time playback.
-- **Audio Overlays**: Add background music tracks to your recordings.
+### ✂️ Editing (Browser-Based Web App)
+- **FFmpeg Web Worker**: Video processing (trimming, exports) runs in a background thread, keeping the UI perfectly responsive.
+- **Annotation Tools**: Interactive sub-panels for adding blur regions (masking sensitive data) and highlights.
+- **Timeline Editor**: Frame-accurate trimming with interactive handles and 30fps real-time preview.
+- **Audio Integration**: Multiple background music track options with volume control.
 
 ### 📂 Management (Dashboard)
-- **Video Library**: Search, sort, and manage all your recordings in a sleek, glassmorphism-inspired interface.
-- **Secure Auth**: Full user authentication with JWT, protected by encrypted PostgreSQL storage.
-- **Drag & Drop**: Manually upload existing video files directly to the platform.
+- **Video Library**: Search, sort (Newest/Oldest/Alphabetical), and manage all your recordings.
+- **Auth & Security**: JWT-based session management with CORS-restricted origin protection.
+- **Toast Notifications**: Modern, non-intrusive feedback for every system action.
+- **Local Storage**: Auto-persistence of user profiles for a seamless session experience.
 
 ## 🛠️ Tech Stack
 
 - **Frontend**: [Next.js](https://nextjs.org/) (App Router), Vanilla CSS, [FFmpeg.wasm](https://ffmpegwasm.netlify.app/)
 - **Backend**: [Node.js](https://nodejs.org/), [Express](https://expressjs.com/), [PostgreSQL](https://www.postgresql.org/)
 - **Extension**: Chrome Extension API (Manifest V3), Offscreen API, TabCapture
-- **Styling**: Modern CSS Variables, Glassmorphism, Dark Mode native
+- **Networking**: Native Fetch API (Optimized for blob handling)
 
 ## 📦 Project Structure
 
 ```bash
 ScreenV1/
 ├── web/           # Next.js Frontend (Dashboard & Video Editor)
-├── server/        # Express.js API (Auth, Video Management, DB)
-├── extension/     # Chrome Extension (Screen Recorder)
-└── .gemini/       # Project Task Tracking & Documentation
+├── server/        # Express.js API (Auth, Video Management, Postgres)
+├── extension/     # Chrome Extension (Screen Recorder & PiP logic)
+└── .gemini/       # Project Audit & Documentation
 ```
 
-## ⚙️ Installation
+## ⚙️ Quick Start
 
-### 1. Backend Setup
+### 1. Prerequisites
+- [Node.js](https://nodejs.org/) (v18+)
+- [PostgreSQL](https://www.postgresql.org/) (Running on port 5432)
+
+### 2. Backend Setup
 ```bash
 cd server
 npm install
-# Ensure you have a local PostgreSQL instance running
-# Update DATABASE_URL in server/db.js if necessary
+# Create a 'screenv1' database in Postgres
+# The app will automatically initialize the schema on start
 npm start
 ```
 
-### 2. Frontend Setup
+### 3. Frontend Setup
 ```bash
 cd web
 npm install
 npm run dev
 ```
 
-### 3. Extension Setup
+### 4. Extension Setup
 - Open Chrome and navigate to `chrome://extensions`.
-- Enable **Developer Mode** (top right).
-- Click **Load Unpacked** and select the `extension/` folder.
-- Log in to the web app first, then start recording!
+- Enable **Developer Mode**.
+- Click **Load Unpacked** and select the `extension/` folder in the root directory.
+
+## 🛡️ Security
+- **JWT_SECRET**: Enforced in production to safeguard user sessions.
+- **CORS Protection**: Access to the API is strictly restricted to the authorized dashboard and extension workspace.
 
 ## 📜 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-Built with ❤️ for creators and educators.
+Built with ❤️ for the next generation of content creators.
