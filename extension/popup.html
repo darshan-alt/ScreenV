@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ScreenV1 Recorder</title>
+    <link rel="stylesheet" href="popup.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="logo">
+          <div class="icon"></div>
+          <h1>ScreenV1</h1>
+        </div>
+      </header>
+
+      <main id="app">
+        <div id="login-form" class="hidden">
+           <h2>Login to Start</h2>
+           <input type="email" id="email" placeholder="Email">
+           <input type="password" id="password" placeholder="Password">
+           <button id="login-btn">Login</button>
+           <p class="small">Don't have an account? <a href="#" target="_blank">Register</a></p>
+        </div>
+
+        <div id="controls" class="">
+           <div class="options">
+             <label class="switch">
+                <input type="checkbox" id="webcam-toggle">
+                <span class="slider"></span>
+             </label>
+             <span>Show Webcam Overlay</span>
+           </div>
+
+           <div class="action-buttons">
+             <button id="start-btn" class="primary">
+               <span class="record-icon"></span>
+               Start Recording
+             </button>
+             <button id="stop-btn" class="secondary hidden">
+               <span class="stop-icon"></span>
+               Stop Recording
+             </button>
+           </div>
+           
+           <div id="status" class="status-indicator">
+              <span class="indicator"></span>
+              <span class="text">Ready</span>
+           </div>
+        </div>
+      </main>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>
